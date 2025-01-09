@@ -45,7 +45,6 @@ class LandingAPI(APIView):
 class LandingAPIDetail(APIView):
 
     name = 'Landing Detail API'
-
     collection_name = 'coleccion'
 
     def get(self, request, pk):
@@ -89,4 +88,5 @@ class LandingAPIDetail(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
         ref.child(pk).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({"message": "Documento eliminado exitosamente"},
+                        status=status.HTTP_204_NO_CONTENT)
