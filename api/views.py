@@ -49,10 +49,44 @@ class LandingAPIDetail(APIView):
     collection_name = 'coleccion'
 
     def get(self, request, pk):
-        return Response(None, status=status.HTTP_200_OK)
+        ref = db.reference(f'{self.collection_name}')
+        #Se busca el documento por pk
+        document = ref.child(pk).get()
+        if document:
+            return Response(document, status=status.HTTP_200_OK)
+        return Response(
+            {"error": "Documento no encontrado"},
+            status=status.HTTP_404_NOT_FOUND
+        )
 
     def put(self, request, pk):
-        return Response(None, status=status.HTTP_200_OK)
+        if not request.data:
+            return Response(
+                {"error": "No se proporcionarion datos para actualizar"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        ref = db.reference(f'{self.collection_name}')
+        if not ref.child(pk).get():
+            return Response(
+                {"error": "Documento no encontrado"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        current_time = datetime.now()
+        custom_format = current_time.strftime("%d/%m/%Y, %I:%M:%S %p").lower().replace('am', 'a. m.').replace('pm', 'p. m.')
+        request.data.update({"saved": custom_format})
+
+        ref.child(pk).update(request.data)
+        return Response(
+            {"message": "Documento actualizado exitosamente"},
+            status=status.HTTP_200_OK
+        )
 
     def delete(self, request, pk):
-        return Response(None, status=status.HTTP_200_OK)
+        ref = db.reference(f'{self.collection_name}')
+        if not ref.child(pk).get():
+            return Response(
+                {"error": "Documento no encontrado"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        ref.child(pk).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
