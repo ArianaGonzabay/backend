@@ -7,6 +7,12 @@ from django.http import HttpResponse
 import requests
 import json
 
+# Importe el decorador login_required
+from django.contrib.auth.decorators import login_required, permission_required
+
+# Restricción de acceso con @login_required
+@login_required
+@permission_required('main.index_viewer', raise_exception=True)
 def index(request):
     # Arme el endpoint del REST API
     current_url = request.build_absolute_uri()
