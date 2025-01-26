@@ -166,7 +166,7 @@
     </div>
 
     <!-- BEGIN - Gráficos -->
-    <div class="grid gap-6 mb-8 md:grid-cols-2">
+    <div class="grid gap-6 mb-8 md:grid-cols-2 justify-center">
       <div
         class="min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
         <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300">
@@ -181,8 +181,18 @@
         </h4>
         <canvas id="line"></canvas>
       </div>
+      <!-- Gráfico de Barras -->
+      <div class="min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        <h4 class="mb-4 font-semibold text-gray-800 dark:text-gray-300 text-center">
+          Preferencias de Comida
+        </h4>
+        <div class="flex justify-center">
+          <canvas id="bars"></canvas>
+        </div>
+      </div>
     </div>
     <!-- END - Gráficos -->
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/js/charts-bars.js"></script>
   </div>
 </main>
