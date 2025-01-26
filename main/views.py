@@ -28,14 +28,25 @@ def index(request):
     # Respuestas totales
     total_responses = len(response_dict.keys())
 
+    #Primera y última respuesta
+    responses = list(response_dict.values())
+    if responses:
+        first_response = responses[0].get('saved')
+        last_response = responses[-1].get('saved')
+    else:
+        first_response = None
+        last_response = None
+
     # Valores de la respuesta
     responses = response_dict.values()
 
     # Objeto con los datos a renderizar
     data = {
-        'title': 'Landing - Dashboard',
+        'title': 'ReadyMeals - Dashboard',
         'total_responses': total_responses,
-        'responses': responses
+        'responses': responses,
+        'first_response': first_response,
+        'last_response': last_response
     }
 
     # Renderización en la plantilla
