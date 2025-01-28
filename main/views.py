@@ -7,6 +7,8 @@ from django.http import HttpResponse
 import requests
 import json
 
+from collections import Counter
+
 # Importe el decorador login_required
 from django.contrib.auth.decorators import login_required, permission_required
 
@@ -37,6 +39,19 @@ def index(request):
         first_response = None
         last_response = None
 
+    #Días con más respuestas
+    dates = [
+        response.get('saved').split(',')[0]  # Extract only the date part
+        for response in responses if response.get('saved')
+    ]
+
+    if dates:
+        date_counts = Counter(dates)
+        most_common_date, most_common_count = date_counts.most_common(1)[0]
+    else:
+        most_common_date = None
+        most_common_count = 0
+
     # Valores de la respuesta
     responses = response_dict.values()
 
@@ -46,7 +61,9 @@ def index(request):
         'total_responses': total_responses,
         'responses': responses,
         'first_response': first_response,
-        'last_response': last_response
+        'last_response': last_response,
+        'most_common_date': most_common_date,
+        'most_common_count': most_common_count
     }
 
     # Renderización en la plantilla
