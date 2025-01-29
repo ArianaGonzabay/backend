@@ -1,71 +1,93 @@
-/**
- * For usage, visit Chart.js docs https://www.chartjs.org/docs/latest/
- */
+// Lista de días de la semana
+const daysOfWeek = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+// Tipos de comida y colores asociados
+const foodTypes = {
+  'Ecuatoriana': '#0694a2',
+  'Italiana': '#1c64f2',
+  'Saludable': '#7e3af2',
+  'Asiática': '#f97316',
+  'Piqueos': '#ef4444',
+};
+
+// Configuración del gráfico de líneas
 const lineConfig = {
   type: 'line',
   data: {
-    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-    datasets: [
-      {
-        label: 'Organic',
-        /**
-         * These colors come from Tailwind CSS palette
-         * https://tailwindcss.com/docs/customizing-colors/#default-color-palette
-         */
-        backgroundColor: '#0694a2',
-        borderColor: '#0694a2',
-        data: [43, 48, 40, 54, 67, 73, 70],
-        fill: false,
-      },
-      {
-        label: 'Paid',
-        fill: false,
-        /**
-         * These colors come from Tailwind CSS palette
-         * https://tailwindcss.com/docs/customizing-colors/#default-color-palette
-         */
-        backgroundColor: '#7e3af2',
-        borderColor: '#7e3af2',
-        data: [24, 50, 64, 74, 52, 51, 65],
-      },
-    ],
+    labels: daysOfWeek,
+    datasets: Object.keys(foodTypes).map(food => ({
+      label: food,
+      backgroundColor: foodTypes[food],
+      borderColor: foodTypes[food],
+      data: new Array(7).fill(0),
+      fill: false,
+      tension: 0.4,
+    })),
   },
   options: {
     responsive: true,
-    /**
-     * Default legends are ugly and impossible to style.
-     * See examples in charts.html to add your own legends
-     *  */
-    legend: {
-      display: false,
-    },
-    tooltips: {
-      mode: 'index',
-      intersect: false,
-    },
-    hover: {
-      mode: 'nearest',
-      intersect: true,
-    },
+    plugins: { legend: { display: true } },
     scales: {
-      x: {
-        display: true,
-        scaleLabel: {
-          display: true,
-          labelString: 'Month',
-        },
-      },
       y: {
-        display: true,
-        scaleLabel: {
-          display: true,
-          labelString: 'Value',
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+          precision: 0,
+          callback: value => Math.floor(value),
         },
       },
     },
   },
+};
+
+// Crear instancia del gráfico
+const lineCtx = document.getElementById('line');
+let myLineChart;
+if (lineCtx) {
+  myLineChart = new Chart(lineCtx, lineConfig);
 }
 
-// change this to the id of your chart element in HMTL
-const lineCtx = document.getElementById('line')
-window.myLine = new Chart(lineCtx, lineConfig)
+// Función para contar preferencias de comida por día de la semana
+const countFoodPreferencesByDay = (data) => {
+  let counts = {};
+  Object.keys(foodTypes).forEach(food => {
+    counts[food] = new Array(7).fill(0);
+  });
+
+  Object.values(data).forEach(record => {
+    const { saved, preferencias } = record;
+    if (!saved || !preferencias) return;
+
+    let cleanedPreference = preferencias.trim().replace(/^Comida\s+/i, "").toLowerCase();
+    let preferenceKey = Object.keys(foodTypes).find(key => key.toLowerCase() === cleanedPreference);
+
+    if (!preferenceKey) return;
+
+    let [day, month, year] = saved.split(', ')[0].split('/').map(num => parseInt(num, 10));
+    let dayIndex = new Date(year, month - 1, day).getDay();
+
+    counts[preferenceKey][dayIndex]++;
+  });
+
+  return counts;
+};
+
+// Función para actualizar el gráfico de líneas
+const updateLineChart = () => {
+  fetch('/api/v1/landing')
+    .then(response => response.json())
+    .then(data => {
+      const submitCounts = countFoodPreferencesByDay(data);
+      if (!myLineChart) return;
+
+      myLineChart.data.datasets.forEach(dataset => {
+        dataset.data = submitCounts[dataset.label] || new Array(7).fill(0);
+      });
+
+      myLineChart.update();
+    })
+    .catch(() => {});
+};
+
+// Llamar a la función de actualización
+updateLineChart();
